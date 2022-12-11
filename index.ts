@@ -2,7 +2,7 @@ import { Block, Blockchain } from "./blockchain";
 import Client from "./client";
 import { chainServer, P2PServer, Peer } from "./app";
 
-import Wallet from "./wallet/wallet";
+import { TransactionPool, Wallet } from "./wallet";
 
 const wallet = new Wallet("secret");
 const block = new Block(
@@ -13,6 +13,8 @@ const block = new Block(
   "i am the validator",
   "signature"
 );
+
+const transactionPool = new TransactionPool();
 
 const blockchain = new Blockchain();
 blockchain.addBlock([]);
@@ -42,7 +44,7 @@ const startP2PServer = async () => {
   ];
   await portsAndPeers.forEach(async (portAndPeer) => {
     const { port, peers } = portAndPeer;
-    const p2pServer = new P2PServer(blockchain, port);
+    const p2pServer = new P2PServer(blockchain, port, transactionPool);
     await p2pServer.listen(peers as Peer[]);
   });
 
@@ -71,7 +73,7 @@ const startMiners = async () => {
   await portsAndPeers.forEach(async (portAndPeer) => {
     const { chainPort, peerPort, peers } = portAndPeer;
     const blockchain = new Blockchain(genesisBlock);
-    const p2pServer = new P2PServer(blockchain, peerPort);
+    const p2pServer = new P2PServer(blockchain, peerPort, transactionPool);
     await p2pServer.listen(peers as Peer[]);
     await chainServer(blockchain, chainPort, p2pServer);
   });
@@ -79,8 +81,9 @@ const startMiners = async () => {
   console.log("Miners started");
 };
 
-startServerAndClient();
+// startServerAndClient();
 // startP2PServer();
-// startMiners();
+startMiners();
 
-// client.mineBlock(["this is so much data!"]);
+client.mineBlock(["this is so much data!"]);
+client.transact("my friend", 10, "default");

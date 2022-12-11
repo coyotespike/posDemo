@@ -16,6 +16,11 @@ class TransactionPool {
       return isValidTransaction;
     });
   }
+
+  transactionExists(transaction: Transaction) {
+    const txn = this.transactions.find((t) => t.id === transaction.id);
+    return !!txn;
+  }
 }
 
 export default TransactionPool;

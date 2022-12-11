@@ -1,6 +1,5 @@
 import express from "express";
 import bodyParser from "body-parser";
-import { stringify } from "flatted";
 
 import { Blockchain } from "../blockchain";
 import P2PServer from "./p2p-server";
@@ -36,6 +35,7 @@ const initHttpServer = (
         myBlockchain,
         transactionPool
       );
+      p2pServer?.broadcastTransaction(transaction);
       res.send(transaction);
       // res.send({});
     });

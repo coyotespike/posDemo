@@ -1,17 +1,29 @@
 import ws from "ws";
 import { Blockchain } from "../blockchain";
+import { TransactionPool } from "../wallet";
 
 export type Peer = `ws://localhost:${number}`;
+
+const MESSAGE_TYPE = {
+  chain: "CHAIN",
+  transaction: "TRANSACTION",
+};
 
 class P2PServer {
   blockchain: Blockchain;
   P2P_PORT: number;
   sockets: Array<ws>;
+  transactionPool: TransactionPool;
 
-  constructor(blockchain: Blockchain, P2P_PORT: number) {
+  constructor(
+    blockchain: Blockchain,
+    P2P_PORT: number,
+    transactionPool: TransactionPool
+  ) {
     this.blockchain = blockchain;
     this.sockets = [];
     this.P2P_PORT = P2P_PORT;
+    this.transactionPool = transactionPool;
   }
 
   listen(peers: Array<Peer>) {
@@ -36,29 +48,63 @@ class P2PServer {
 
     this.messageHandler(socket);
 
-    // socket.send(JSON.stringify(this.blockchain.chain));
-    const message = JSON.stringify({
-      peer: `${this.P2P_PORT}`,
-      chain: this.blockchain.chain,
-    });
-    socket.send(message);
+    // const message = JSON.stringify({
+    //   peer: `${this.P2P_PORT}`,
+    //   chain: this.blockchain.chain,
+    // });
+    // socket.send(message);
   }
 
   messageHandler(socket) {
     socket.on("message", (message) => {
       const data = JSON.parse(message);
-      this.blockchain.replaceChain(data.chain);
+      console.log("received message from peer: ", data.type);
+
+      switch (data.type) {
+        case MESSAGE_TYPE.chain:
+          this.blockchain.replaceChain(data.chain);
+          break;
+        case MESSAGE_TYPE.transaction:
+          const isTxnInPool = this.transactionPool.transactionExists(
+            data.transaction
+          );
+          if (!isTxnInPool) {
+            this.transactionPool.addTransaction(data.transaction);
+            this.broadcastTransaction(data.transaction);
+          }
+          break;
+        default:
+          break;
+      }
     });
   }
 
   sendChain(socket) {
-    socket.send(JSON.stringify(this.blockchain));
+    socket.send(
+      JSON.stringify({
+        type: MESSAGE_TYPE.chain,
+        chain: this.blockchain.chain,
+      })
+    );
   }
 
   syncChains() {
     this.sockets.forEach((socket) => {
       this.sendChain(socket);
     });
+  }
+
+  broadcastTransaction(transaction) {
+    this.sockets.forEach((socket) => this.sendTransaction(socket, transaction));
+  }
+
+  sendTransaction(socket, transaction) {
+    socket.send(
+      JSON.stringify({
+        type: MESSAGE_TYPE.transaction,
+        transaction,
+      })
+    );
   }
 }
 
