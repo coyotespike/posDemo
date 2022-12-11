@@ -19,3 +19,11 @@ It's clear to me that in a PoW system any validator out of touch with the networ
 In PoS it seems we have many transactions on many nodes. And then they elect a validator using staking.
 
 Also, I am a little confused about how a WS server works. Here it seems a server has many sockets to connect with peers. It is not really a server-client model.
+
+## Transactions and the Pool
+
+> The transaction-pool will be an object updated in real time that contains all the new transactions submitted by all miners in the network.
+
+> Users will create transactions and then they will submit every transaction to the pool. These new transactions, present in the pool, will be considered unconfirmed.
+
+> Miners take a group of transactions from this pool and create the block and makes the transaction confirmed.

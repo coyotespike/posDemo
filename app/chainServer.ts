@@ -1,8 +1,14 @@
 import express from "express";
 import bodyParser from "body-parser";
+import { stringify } from "flatted";
 
 import { Blockchain } from "../blockchain";
 import P2PServer from "./p2p-server";
+
+import { TransactionPool, Wallet } from "../wallet";
+
+const wallet = new Wallet(Date.now().toString());
+const transactionPool = new TransactionPool();
 
 const initHttpServer = (
   myBlockchain: Blockchain,
@@ -15,6 +21,23 @@ const initHttpServer = (
 
     app.get("/blocks", (req, res) => {
       res.json(myBlockchain.chain);
+    });
+
+    app.get("/transactions", (req, res) => {
+      res.json(transactionPool.transactions);
+    });
+
+    app.post("/transact", (req, res) => {
+      const { to, amount, type } = req.body;
+      const transaction = wallet.createTransaction(
+        to as string,
+        amount as number,
+        type as string,
+        myBlockchain,
+        transactionPool
+      );
+      res.send(transaction);
+      // res.send({});
     });
 
     app.post("/mine", (req, res) => {

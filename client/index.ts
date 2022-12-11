@@ -27,6 +27,25 @@ class Client {
     );
     return await response.json();
   }
+
+  async getTransactions() {
+    const response = await this.fetch(
+      `http://localhost:${this.HTTP_PORT}/transactions`
+    );
+    return await response.json();
+  }
+
+  async transact(to, amount, type) {
+    const response = await this.fetch(
+      `http://localhost:${this.HTTP_PORT}/transact`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ to, amount, type }),
+      }
+    );
+    return await response.json();
+  }
 }
 
 export default Client;

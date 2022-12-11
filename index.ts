@@ -2,6 +2,9 @@ import { Block, Blockchain } from "./blockchain";
 import Client from "./client";
 import { chainServer, P2PServer, Peer } from "./app";
 
+import Wallet from "./wallet/wallet";
+
+const wallet = new Wallet("secret");
 const block = new Block(
   new Date(),
   "lastHash",
@@ -20,8 +23,15 @@ const client = new Client(HTTP_PORT);
 const startServerAndClient = async () => {
   await chainServer(blockchain, HTTP_PORT);
   const client = new Client(HTTP_PORT);
-  const blocks = await client.getBlocks();
-  console.log(blocks);
+  // const blocks = await client.getBlocks();
+  // console.log(blocks);
+
+  let txns = await client.getTransactions();
+  console.log(txns);
+  const newTxn = await client.transact("my friend", 10, "default");
+  console.log(newTxn);
+  txns = await client.getTransactions();
+  console.log(txns);
 };
 
 const startP2PServer = async () => {
@@ -69,8 +79,8 @@ const startMiners = async () => {
   console.log("Miners started");
 };
 
-// startServerAndClient();
+startServerAndClient();
 // startP2PServer();
-startMiners();
+// startMiners();
 
-client.mineBlock(["this is so much data!"]);
+// client.mineBlock(["this is so much data!"]);

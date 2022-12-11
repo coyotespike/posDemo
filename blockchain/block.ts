@@ -1,4 +1,4 @@
-import { SHA256 } from "crypto-js";
+import { ChainUtil } from "../chainUtils";
 
 class Block {
   timestamp: Date;
@@ -35,7 +35,7 @@ Signature : ${this.signature}`;
   }
 
   static hash(timestamp, lastHash, data) {
-    return SHA256(JSON.stringify(`${timestamp}${lastHash}${data}`)).toString();
+    return ChainUtil.hash(`${timestamp}${lastHash}${data}`);
   }
 
   static genesis() {
