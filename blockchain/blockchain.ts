@@ -3,8 +3,8 @@ import Block from "./block";
 class Blockchain {
   chain: Block[];
 
-  constructor() {
-    this.chain = [Block.genesis()];
+  constructor(genesisBlock?: Block) {
+    this.chain = [genesisBlock || Block.genesis()];
   }
 
   addBlock(data: Array<any>) {
@@ -25,7 +25,8 @@ class Blockchain {
       return false;
 
     return chain.slice(1).every((block, index) => {
-      const lastBlock = chain[index - 1];
+      // note this will start at 0, the genesis block, not included in this slice
+      const lastBlock = chain[index];
 
       return (
         block.lastHash === lastBlock.hash &&
@@ -36,7 +37,7 @@ class Blockchain {
 
   replaceChain(newChain) {
     if (newChain.length <= this.chain.length) {
-      console.log("Received chain is not longer than the current chain.");
+      // console.log("Received chain is not longer than the current chain.");
       return;
     } else if (!this.isValidChain(newChain)) {
       console.log("The received chain is not valid.");
@@ -45,6 +46,10 @@ class Blockchain {
 
     console.log("Replacing blockchain with the new chain.");
     this.chain = newChain;
+  }
+
+  getGenesisBlock() {
+    return this.chain[0];
   }
 }
 
