@@ -30,12 +30,14 @@ class P2PServer {
     this.wallet = wallet;
   }
 
-  listen(peers: Array<Peer>) {
+  listen(peers?: Array<Peer>) {
     const server = new ws.Server({ port: this.P2P_PORT });
     server.on("connection", (socket) => this.connectSocket(socket));
     console.log(`Listening for peer-to-peer connections on: ${this.P2P_PORT}`);
 
-    this.connectToPeers(peers);
+    if (peers) {
+      this.connectToPeers(peers);
+    }
   }
 
   connectToPeers(peers: Array<Peer>) {
