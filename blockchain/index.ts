@@ -1,4 +1,5 @@
 import Block from "./block";
 import Blockchain from "./blockchain";
+import Accounts from "./accounts";
 
-export { Block, Blockchain };
+export { Accounts, Block, Blockchain };

@@ -3,6 +3,7 @@ import Client from "./client";
 import { chainServer, P2PServer, Peer } from "./app";
 
 import { TransactionPool, Wallet } from "./wallet";
+import { Transaction } from "./chainUtils";
 
 const wallet = new Wallet("secret");
 const block = new Block(
@@ -25,15 +26,6 @@ const client = new Client(HTTP_PORT);
 const startServerAndClient = async () => {
   await chainServer(blockchain, HTTP_PORT);
   const client = new Client(HTTP_PORT);
-  // const blocks = await client.getBlocks();
-  // console.log(blocks);
-
-  let txns = await client.getTransactions();
-  console.log(txns);
-  const newTxn = await client.transact("my friend", 10, "default");
-  console.log(newTxn);
-  txns = await client.getTransactions();
-  console.log(txns);
 };
 
 const startP2PServer = async () => {
@@ -86,4 +78,10 @@ const startMiners = async () => {
 startMiners();
 
 client.mineBlock(["this is so much data!"]);
-client.transact("my friend", 10, "default");
+const txn = Transaction.generateTransaction(
+  wallet,
+  "my friend",
+  10,
+  "TRANSACTION"
+);
+client.transact(txn);

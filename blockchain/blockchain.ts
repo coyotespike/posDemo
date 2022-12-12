@@ -1,10 +1,13 @@
 import Block from "./block";
+import Accounts from "./accounts";
 
 class Blockchain {
   chain: Block[];
+  accounts: Accounts;
 
   constructor(genesisBlock?: Block) {
     this.chain = [genesisBlock || Block.genesis()];
+    this.accounts = new Accounts();
   }
 
   addBlock(data: Array<any>) {
@@ -13,6 +16,12 @@ class Blockchain {
 
     return block;
   }
+
+  getBalance(address: string) {
+    let balance = 0;
+    return this.accounts.getBalance(address);
+  }
+
   isValidChain(chain) {
     /*
         A valid chain must start with the genesis block

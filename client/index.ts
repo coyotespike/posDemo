@@ -1,4 +1,5 @@
 import fetch from "node-fetch";
+import { Transaction } from "../chainUtils";
 
 class Client {
   fetch: typeof fetch;
@@ -35,13 +36,13 @@ class Client {
     return await response.json();
   }
 
-  async transact(to, amount, type) {
+  async transact(txn: Transaction) {
     const response = await this.fetch(
       `http://localhost:${this.HTTP_PORT}/transact`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ to, amount, type }),
+        body: JSON.stringify(txn),
       }
     );
     return await response.json();

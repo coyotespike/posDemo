@@ -47,12 +47,6 @@ class P2PServer {
     console.log("Socket connected");
 
     this.messageHandler(socket);
-
-    // const message = JSON.stringify({
-    //   peer: `${this.P2P_PORT}`,
-    //   chain: this.blockchain.chain,
-    // });
-    // socket.send(message);
   }
 
   messageHandler(socket) {
