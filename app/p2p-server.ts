@@ -88,6 +88,7 @@ class P2PServer {
                   this.wallet
                 );
                 this.broadcastBlock(block);
+                this.transactionPool.clear();
               }
             }
           }

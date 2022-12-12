@@ -118,6 +118,11 @@ class Blockchain {
       }
     });
   }
+  executeChain(chain) {
+    chain.forEach((block) => {
+      this.executeTransactions(block);
+    });
+  }
 }
 
 export default Blockchain;

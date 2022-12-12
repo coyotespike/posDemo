@@ -32,4 +32,17 @@ Also, I am a little confused about how a WS server works. Here it seems a server
 
 As described in tag v0.0.1, we make a basic blockchain. Clients ask a chainServer to mine, and a p2pServer broadcasts all blocks. Every peer applies the longest chain rule.
 
-To add staking
+To add staking:
+- a client sends transactions to the chainServer.
+- when the threshold is reached, each peer will check if it is the leader
+- if nobody is, nothing will happen.
+
+- a peer can send a message with type STAKE, and some amount to stake
+- then the chain records that amount of staking
+- the chain also transfers the block fee to the validator
+
+- a peer can send a message with type validator fee
+- the chain checks if it's valid and if so the peer is added to the list of validators
+- and the peer gets the transfer fee for that transaction
+
+So far it is lacking an easy demo of staking and validating. Nor is there a distinction built in yet.
