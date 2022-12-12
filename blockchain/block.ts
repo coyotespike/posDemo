@@ -48,14 +48,23 @@ Signature : ${this.signature}`;
       "genesis-signature"
     );
   }
-  static createBlock(lastBlock, data) {
+  static createBlock(lastBlock, data, wallet) {
     let hash;
     let timestamp = Date.now();
     const lastHash = lastBlock.hash;
     hash = Block.hash(timestamp, lastHash, data);
 
-    return new Block(timestamp, lastHash, hash, data);
+    let validator = wallet.getPublicKey();
+
+    let signature = Block.signBlockHash(hash, wallet);
+
+    return new Block(timestamp, lastHash, hash, data, validator, signature);
   }
+
+  static signBlockHash(hash, wallet) {
+    return wallet.sign(hash);
+  }
+
   static blockHash(block) {
     const { timestamp, lastHash, data } = block;
     return Block.hash(timestamp, lastHash, data);

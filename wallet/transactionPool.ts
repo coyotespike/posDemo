@@ -1,10 +1,15 @@
-import { TransactionType, Transaction } from "../chainUtils";
+import {
+  TransactionType,
+  Transaction,
+  TRANSACTION_THRESHOLD,
+} from "../chainUtils";
 
 class TransactionPool {
   transactions: TransactionType[] = [];
 
   addTransaction(transaction: Transaction) {
     this.transactions.push(transaction);
+    return this.transactions.length >= TRANSACTION_THRESHOLD;
   }
 
   validTransactions() {
@@ -20,6 +25,10 @@ class TransactionPool {
   transactionExists(transaction: Transaction) {
     const txn = this.transactions.find((t) => t.id === transaction.id);
     return !!txn;
+  }
+
+  clear() {
+    this.transactions = [];
   }
 }
 

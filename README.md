@@ -27,3 +27,9 @@ Also, I am a little confused about how a WS server works. Here it seems a server
 > Users will create transactions and then they will submit every transaction to the pool. These new transactions, present in the pool, will be considered unconfirmed.
 
 > Miners take a group of transactions from this pool and create the block and makes the transaction confirmed.
+
+## Staking
+
+As described in tag v0.0.1, we make a basic blockchain. Clients ask a chainServer to mine, and a p2pServer broadcasts all blocks. Every peer applies the longest chain rule.
+
+To add staking

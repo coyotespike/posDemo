@@ -1,12 +1,13 @@
 import ws from "ws";
 import { Blockchain } from "../blockchain";
-import { TransactionPool } from "../wallet";
+import { TransactionPool, Wallet } from "../wallet";
 
 export type Peer = `ws://localhost:${number}`;
 
 const MESSAGE_TYPE = {
   chain: "CHAIN",
   transaction: "TRANSACTION",
+  block: "BLOCK",
 };
 
 class P2PServer {
@@ -14,16 +15,19 @@ class P2PServer {
   P2P_PORT: number;
   sockets: Array<ws>;
   transactionPool: TransactionPool;
+  wallet: Wallet;
 
   constructor(
     blockchain: Blockchain,
     P2P_PORT: number,
-    transactionPool: TransactionPool
+    transactionPool: TransactionPool,
+    wallet: Wallet
   ) {
     this.blockchain = blockchain;
     this.sockets = [];
     this.P2P_PORT = P2P_PORT;
     this.transactionPool = transactionPool;
+    this.wallet = wallet;
   }
 
   listen(peers: Array<Peer>) {
@@ -58,19 +62,60 @@ class P2PServer {
         case MESSAGE_TYPE.chain:
           this.blockchain.replaceChain(data.chain);
           break;
+        case MESSAGE_TYPE.block:
+          if (this.isValidBlock(data.block)) {
+            this.broadcastBlock(data.block);
+          }
+          break;
+
         case MESSAGE_TYPE.transaction:
           const isTxnInPool = this.transactionPool.transactionExists(
             data.transaction
           );
           if (!isTxnInPool) {
-            this.transactionPool.addTransaction(data.transaction);
+            const thresholdReached = this.transactionPool.addTransaction(
+              data.transaction
+            );
             this.broadcastTransaction(data.transaction);
+
+            if (thresholdReached) {
+              if (this.blockchain.getLeader() === this.wallet.getPublicKey()) {
+                console.log("I am the leader, creating a block");
+                let block = this.blockchain.createBlock(
+                  this.transactionPool.transactions,
+                  this.wallet
+                );
+                this.broadcastBlock(block);
+              }
+            }
           }
           break;
         default:
           break;
       }
     });
+  }
+
+  isValidBlock(block) {
+    const lastBlock = this.blockchain.getLastBlock();
+    /**
+     * check hash
+     * check last hash
+     * check signature
+     * check leader
+     */
+    if (
+      block.lastHash === lastBlock.hash &&
+      block.hash === block.blockHash(block) &&
+      block.verifyBlock(block) &&
+      block.verifyLeader(block, this.blockchain.getLeader())
+    ) {
+      console.log("block valid");
+      this.blockchain.addBlock(block);
+      return true;
+    } else {
+      return false;
+    }
   }
 
   sendChain(socket) {
@@ -97,6 +142,21 @@ class P2PServer {
       JSON.stringify({
         type: MESSAGE_TYPE.transaction,
         transaction,
+      })
+    );
+  }
+
+  broadcastBlock(block) {
+    this.sockets.forEach((socket) => {
+      this.sendBlock(socket, block);
+    });
+  }
+
+  sendBlock(socket, block) {
+    socket.send(
+      JSON.stringify({
+        type: MESSAGE_TYPE.block,
+        block: block,
       })
     );
   }

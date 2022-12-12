@@ -92,5 +92,12 @@ class Transaction {
 
 const TRANSACTION_FEE = 1;
 const INITIAL_BALANCE = 1000;
+const TRANSACTION_THRESHOLD = 5;
 
-export { ChainUtil, Transaction, TRANSACTION_FEE, INITIAL_BALANCE };
+export {
+  ChainUtil,
+  Transaction,
+  TRANSACTION_FEE,
+  INITIAL_BALANCE,
+  TRANSACTION_THRESHOLD,
+};

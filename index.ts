@@ -18,7 +18,6 @@ const block = new Block(
 const transactionPool = new TransactionPool();
 
 const blockchain = new Blockchain();
-blockchain.addBlock([]);
 
 const HTTP_PORT = 3001;
 const client = new Client(HTTP_PORT);
@@ -36,7 +35,7 @@ const startP2PServer = async () => {
   ];
   await portsAndPeers.forEach(async (portAndPeer) => {
     const { port, peers } = portAndPeer;
-    const p2pServer = new P2PServer(blockchain, port, transactionPool);
+    const p2pServer = new P2PServer(blockchain, port, transactionPool, wallet);
     await p2pServer.listen(peers as Peer[]);
   });
 
@@ -65,7 +64,13 @@ const startMiners = async () => {
   await portsAndPeers.forEach(async (portAndPeer) => {
     const { chainPort, peerPort, peers } = portAndPeer;
     const blockchain = new Blockchain(genesisBlock);
-    const p2pServer = new P2PServer(blockchain, peerPort, transactionPool);
+    const wallet = new Wallet("secret");
+    const p2pServer = new P2PServer(
+      blockchain,
+      peerPort,
+      transactionPool,
+      wallet
+    );
     await p2pServer.listen(peers as Peer[]);
     await chainServer(blockchain, chainPort, p2pServer);
   });

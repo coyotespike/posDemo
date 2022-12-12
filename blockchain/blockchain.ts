@@ -1,20 +1,50 @@
 import Block from "./block";
 import Accounts from "./accounts";
+import Stake from "./stake";
+import Validators from "./validator";
+
+const MESSAGE_TYPE = {
+  chain: "CHAIN",
+  transaction: "TRANSACTION",
+  block: "BLOCK",
+  validator_fee: "VALIDATOR_FEE",
+  stake: "STAKE",
+};
 
 class Blockchain {
   chain: Block[];
   accounts: Accounts;
+  stakes: Stake;
+  validators: Validators;
 
   constructor(genesisBlock?: Block) {
     this.chain = [genesisBlock || Block.genesis()];
     this.accounts = new Accounts();
+    this.stakes = new Stake();
+    this.validators = new Validators();
   }
 
-  addBlock(data: Array<any>) {
-    const block = Block.createBlock(this.chain[this.chain.length - 1], data);
+  addBlock(block: Block) {
     this.chain.push(block);
 
     return block;
+  }
+
+  createBlock(transactions, wallet) {
+    const block = Block.createBlock(
+      this.chain[this.chain.length - 1],
+      transactions,
+      wallet
+    );
+    return block;
+  }
+
+  getLeader() {
+    return this.stakes.getMax(this.validators.list);
+  }
+
+  getLastBlock() {
+    return this.chain[this.chain.length - 1];
   }
 
   getBalance(address: string) {
@@ -59,6 +89,34 @@ class Blockchain {
 
   getGenesisBlock() {
     return this.chain[0];
+  }
+  executeTransactions(block) {
+    block.data.forEach((transaction) => {
+      switch (transaction.type) {
+        case MESSAGE_TYPE.transaction:
+          this.accounts.update(transaction);
+          this.accounts.transferFee(block, transaction);
+          break;
+        case MESSAGE_TYPE.stake:
+          this.stakes.update(transaction);
+          this.accounts.decrement(
+            transaction.input.from,
+            transaction.output.amount
+          );
+          this.accounts.transferFee(block, transaction);
+
+          break;
+        case MESSAGE_TYPE.validator_fee:
+          if (this.validators.update(transaction)) {
+            this.accounts.decrement(
+              transaction.input.from,
+              transaction.output.amount
+            );
+            this.accounts.transferFee(block, transaction);
+          }
+          break;
+      }
+    });
   }
 }
 
